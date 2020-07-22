@@ -17,24 +17,24 @@ router.post('/', (req, res) => {
   });
 });
 
-// get all articles or some, filtered by title or game name
+// get all articles or some, filtered by title in the search bar or game name in filters
 router.get('/', (req, res) => {
-  // const idArticle = req.params.id;
-  const { name, title, search } = req.query;
-
-  if(title || name){
+  const { name, search } = req.query;
+  
+  if(name){
     connection.query(`SELECT *
     FROM article AS a
     JOIN game AS g ON g.idgame = a.game_id
-    WHERE a.title = ?
-    OR g.name = ?`, [title, name], (err, results) => {
+    WHERE g.name = ?`, [name], (err, results) => {
       if(err){
         res.sendStatus(500);
       }
       else if(results.length === 0){
         res.status(404).send('Aucun article ne correspond à ce filtre');
       }
-      res.status(200).json(results);
+      else{
+        res.status(200).json(results);
+      }
     });
   }
   else if(search){
@@ -42,7 +42,7 @@ router.get('/', (req, res) => {
     FROM article AS a
     JOIN game AS g ON g.idgame = a.game_id
     WHERE a.title LIKE ?
-    OR g.name LIKE ?`, [search, search], (err2, finds) => {
+    OR g.name LIKE ?`, ['%' + search + '%', '%' + search + '%'], (err2, finds) => {
       if(err2){
         res.sendStatus(500);
       }
@@ -61,7 +61,9 @@ router.get('/', (req, res) => {
       if(err3){
         res.status(500).send('Erreur lors de la récupération des articles');
       }
-      res.status(200).json(allArticles);
+      else{
+        res.status(200).json(allArticles);
+      }
     });
   }
 });
