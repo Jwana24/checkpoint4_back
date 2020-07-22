@@ -1,0 +1,8 @@
+# node modules package
+node_modules/
+
+# settings on visual studio code
+.vscode
+
+# sensitive data
+.env
