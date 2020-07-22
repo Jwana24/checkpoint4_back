@@ -19,18 +19,20 @@ router.post('/', (req, res) => {
 
 // get all games or some, filtered by the game name in the search bar or category in filters
 router.get('/', (req, res) => {
-  const { category, search } = req.query;
+  const { category, search, developer } = req.query;
   const requestSELECT = `SELECT *,
   c.name AS category_name,
   g.name AS game_name,
   DATE_FORMAT(g.date_release, "%d-%m-%Y") AS date_release
   FROM category_game AS cg
   JOIN category AS c ON c.idcategory = cg.category_id
-  JOIN game AS g ON g.idgame = cg.game_id `;
+  JOIN game AS g ON g.idgame = cg.game_id
+  JOIN developer AS d ON d.iddeveloper = g.developer_id `;
   
-  if(category){
+  if(category || developer){
     connection.query(`${requestSELECT}
-    WHERE c.name = ?`, [category], (err, results) => {
+    WHERE c.name = ?
+    OR d.name = ?`, [category, developer], (err, results) => {
       if(err){
         res.sendStatus(500);
       }
