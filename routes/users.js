@@ -7,12 +7,26 @@ const jwt = require('jsonwebtoken')
 // files
 const connection = require('../connection');
 
+// get the user
+router.get("/:id", (req, res) => {
+  const idUser = req.params.id 
+  connection.query("SELECT * from user WHERE iduser = ?",[idUser], (err, results) => {
+    if (err) {
+      res.status(500).send('Erreur lors de la récupération de l\'utilisateur');
+    } else {
+      res.json(results);
+    }
+  });
+});
+
 // create an user account
 router.post('/', (req, res) => {
   const hashPass = bcrypt.hashSync(req.body.password, 10);
   const dataUser = {
     firstname: req.body.firstname,
     lastname: req.body.lastname,
+    nickname: req.body.nickname,
+    description: req.body.description,
     email: req.body.email,
     password: hashPass
   };
@@ -38,7 +52,7 @@ router.post('/profile', verifyToken, (req, res) => {
       });
     }
   });
-  res.status(403).send('Une erreur a été détectée');
+  // res.status(403).send('Une erreur a été détectée');
 });
 
 // user login by email and password
@@ -58,6 +72,7 @@ router.post('/login', (req, res) => {
         res.status(500).send('Email ou mot de passe incorrect');
       }
       else{
+        user[0].password = '';
         jwt.sign({ user }, process.env.NODE_SECRET_KEY, (_, token) => {
           res.json({ token });
         });
