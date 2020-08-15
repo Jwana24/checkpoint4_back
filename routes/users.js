@@ -26,12 +26,12 @@ router.post('/', (req, res) => {
     firstname: req.body.firstname,
     lastname: req.body.lastname,
     nickname: req.body.nickname,
-    description: req.body.description,
     email: req.body.email,
+    description: req.body.description,
     password: hashPass
   };
 
-  connection.query('INSERT INTO user SET ?', [dataUser], (err, results) => {
+  connection.query('INSERT INTO user SET ?', [dataUser], (err, _) => {
     if(err){
       res.status(500).send('Erreur lors de votre inscription');
     }
@@ -52,7 +52,6 @@ router.post('/profile', verifyToken, (req, res) => {
       });
     }
   });
-  // res.status(403).send('Une erreur a été détectée');
 });
 
 // user login by email and password
@@ -94,5 +93,44 @@ function verifyToken(req, res, next){
     res.sendStatus(500);
   }
 };
+
+// update an user
+router.put('/:id', (req, res) => {
+  if(req.body.password != undefined){
+    const hashPass = bcrypt.hashSync(req.body.password, 10);
+    const dataUser = {
+      firstname: req.body.firstname,
+      lastname: req.body.lastname,
+      nickname: req.body.nickname,
+      email: req.body.email,
+      description: req.body.description,
+      password: hashPass
+    };
+    const paramsUser = req.params.id;
+    
+    connection.query('UPDATE user SET ? WHERE iduser = ?', [dataUser, paramsUser], (err, _) => {
+      if(err){
+        // res.status(500).send('Erreur lors de la modification de votre profil');
+        res.status(500).send(err);
+      }
+      else{
+        res.status(200).send('Vos données ont bien été modifié');
+      }
+    });
+  }
+  else{
+    const dataUser = req.body;
+    const paramUser = req.params.id;
+    connection.query('UPDATE user SET ? WHERE iduser = ?', [dataUser, paramUser], (err2, _) => {
+      if(err2){
+        // res.status(500).send('Erreur lors de la modification de votre profil');
+        res.status(500).send(err2);
+      }
+      else{
+        res.status(200).send('Vos données ont bien été modifié');
+      }
+    })
+  }
+});
 
 module.exports = router;
